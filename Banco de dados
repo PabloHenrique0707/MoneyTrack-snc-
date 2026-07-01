@@ -1,0 +1,213 @@
+create database moneytrack;
+use moneytrack;
+create table usuarios (
+id int auto_increment primary key,
+nome varchar(100),
+email varchar(100),
+senha varchar(255)
+);
+create table contas (
+id_conta int auto_increment primary key,
+nome_banco varchar(100),
+saldo_atual decimal(10,2) default 0,
+tipo_moeda varchar(20),
+tipo_conta enum('corrente','poupança'),
+taxa_manutenção decimal(10,2),
+limite_cheque_especial decimal(10,2),
+taxa_rendimento_mensal decimal(10,2),
+data_aniversario_poupança date,
+usuario_id int,
+foreign key (usuario_id)
+references usuarios(id)
+);
+create table transacao (
+id_transacao int auto_increment primary key,
+valor decimal(10,2) not null,
+data_hora datetime default current_timestamp,
+descricao varchar(255),
+metodo_pagamento varchar(100),
+tipo_transacao enum ('receita','despesa'),
+fonte_renda varchar(100),
+categoria_gasto varchar(100),
+grau_essencialidade enum( 
+'essencial',
+'importante',
+'superfluo'
+),
+conta_id int,
+foreign key (conta_id)
+references contas(id_conta)
+);
+CREATE TABLE notificacoes (
+    id_notificacao INT AUTO_INCREMENT PRIMARY KEY,
+
+    titulo VARCHAR(150),
+    mensagem TEXT,
+
+    data_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    lida BOOLEAN DEFAULT FALSE,
+
+    usuario_id INT,
+
+    FOREIGN KEY (usuario_id)
+    REFERENCES usuarios(id)
+);
+CREATE TABLE gastos_previstos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    valor DECIMAL(10,2) NOT NULL,
+
+    categoria VARCHAR(100),
+
+    data_prevista DATE,
+
+    status_gasto ENUM(
+        'pendente',
+        'pago',
+        'cancelado'
+    ) DEFAULT 'pendente',
+
+    usuario_id INT,
+
+    FOREIGN KEY (usuario_id)
+    REFERENCES usuarios(id)
+);
+CREATE TABLE meios_pagamento (
+    id_meio INT AUTO_INCREMENT PRIMARY KEY,
+
+    instituicao_emissora VARCHAR(150),
+
+    ativo BOOLEAN DEFAULT TRUE,
+
+    tipo_meio ENUM(
+        'cartao',
+        'digital'
+    ),
+
+    numero_final VARCHAR(4),
+
+    bandeira VARCHAR(50),
+
+    limite_credito DECIMAL(10,2),
+
+    dia_fechamento INT,
+
+    chave_principal VARCHAR(255),
+
+    tipo_chave ENUM(
+        'cpf',
+        'email',
+        'telefone',
+        'aleatoria'
+    ),
+
+    usuario_id INT,
+
+    FOREIGN KEY (usuario_id)
+    REFERENCES usuarios(id)
+);
+CREATE TABLE compartilhamentos (
+    id_comp INT AUTO_INCREMENT PRIMARY KEY,
+
+    data_inicio DATE,
+
+    codigo_convite VARCHAR(100) UNIQUE,
+
+    tipo_acesso ENUM(
+        'admin',
+        'leitor'
+    ),
+
+    permissao_exclusao BOOLEAN DEFAULT FALSE,
+
+    gerenciamento_membros BOOLEAN DEFAULT FALSE,
+
+    visualizacao_apenas BOOLEAN DEFAULT TRUE,
+
+    data_expiracao_acesso DATE
+);
+CREATE TABLE planejamento_financeiro (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    nome VARCHAR(150),
+
+    data_inicio DATE,
+
+    data_fim DATE,
+
+    descricao TEXT,
+
+    usuario_id INT,
+
+    FOREIGN KEY (usuario_id)
+    REFERENCES usuarios(id)
+);
+CREATE TABLE telefones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    ddd VARCHAR(3),
+
+    numero VARCHAR(20),
+
+    id_usuario INT,
+
+    FOREIGN KEY (id_usuario)
+    REFERENCES usuarios(id)
+);
+CREATE TABLE usuario_compartilhamento (
+
+    id_usuario INT NOT NULL,
+
+    id_comp INT NOT NULL,
+
+    tipo_acesso ENUM(
+        'admin',
+        'leitor'
+    ),
+
+    PRIMARY KEY (id_usuario, id_comp),
+
+    CONSTRAINT fk_usuario_comp
+    FOREIGN KEY (id_usuario)
+    REFERENCES usuarios(id),
+
+    CONSTRAINT fk_compartilhamento
+    FOREIGN KEY (id_comp)
+    REFERENCES compartilhamentos(id_comp)
+
+);
+alter table usuarios
+add telefones varchar(20);
+INSERT INTO transacao (id_transacao) VALUES (1);
+
+USE moneytrack;
+
+-- Garante que o campo de grau_essencialidade aceite nulo ou não trave por falta de envio
+ALTER TABLE transacao MODIFY COLUMN grau_essencialidade enum('essencial', 'importante', 'superfluo') DEFAULT 'importante';
+
+-- Insere uma conta padrão de ID 1 ligada ao seu primeiro usuário (ajusta o ID se necessário)
+-- Isso evita o erro de chave estrangeira (Foreign Key) quando o JavaScript enviar conta_id = 1
+INSERT IGNORE INTO contas (id_conta, nome_banco, saldo_atual, usuario_id) VALUES (1, 'Carteira Principal', 0.00, 1);
+
+USE moneytrack;
+
+-- 1. Primeiro, criamos um usuário padrão direto no banco para o ID 1 existir
+INSERT IGNORE INTO usuarios (id, nome, email, senha) 
+VALUES (1, 'Usuário Teste', 'teste@email.com', '123456');
+
+-- 2. Agora sim, criamos a conta vinculada a esse usuário sem falhar a chave estrangeira
+INSERT IGNORE INTO contas (id_conta, nome_banco, saldo_atual, usuario_id) 
+VALUES (1, 'Carteira Principal', 0.00, 1);
+
+USE moneytrack;
+
+-- 1. Faz a conta atual (id_conta = 1) pertencer ao Emerson (usuario_id = 3)
+UPDATE contas 
+SET usuario_id = 3, nome_banco = 'Carteira do Emerson' 
+WHERE id_conta = 1;
+
+-- 2. Garante que todas as transações fiquem associadas a essa conta corrigida
+UPDATE transacao 
+SET conta_id = 1 
+WHERE conta_id IS NULL;
