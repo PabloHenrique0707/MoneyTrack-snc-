@@ -1,4 +1,6 @@
+let meuGrafico = null; // Guarda a instância do gráfico do Chart.js
 let todasTransacoes = [];
+let todasMetas = []; // CORRIGIDO: Variável global criada para armazenar as metas corretamente
 let usuarioLogado = JSON.parse(localStorage.getItem('usuario'));
 const FALLBACK_USER_ID = 3; // ID do Emerson como garantia caso o login falhe
 
@@ -101,64 +103,81 @@ async function adicionarTransacao(event) {
 
 /* LISTAR TRANSAÇÕES NO FRONT-END */
 async function listarTransacoes() {
-    const usuario_id = usuarioLogado?.id || FALLBACK_USER_ID;
+    const usuario_id = usuarioLogado ? usuarioLogado.id : FALLBACK_USER_ID;
 
     try {
         const response = await fetch(`http://localhost:3000/transacoes?usuario_id=${usuario_id}`);
-        const transacoes = await response.json();
-        todasTransacoes = transacoes;
         
-        console.log("Transações carregadas:", transacoes);
-
-        const tabelaBody = document.getElementById('corpoTabela') || document.querySelector('table tbody');
-        if (!tabelaBody) return;
-
-        tabelaBody.innerHTML = '';
-
-        const transacoesFiltradas = typeof aplicarFiltros === 'function' ? aplicarFiltros(transacoes) : transacoes;
-
-        if (transacoesFiltradas.length === 0) {
-            tabelaBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: white; padding: 15px;">Nenhuma transação cadastrada.</td></tr>`;
-            atualizarResumosLocais(0, 0);
-            return;
+        if (!response.ok) {
+            throw new Error(`Erro na requisição: Status ${response.status}`);
         }
+
+        const transacoes = await response.json();
+        todasTransacoes = transacoes; 
+        
+        console.log("Transações recebidas do banco:", transacoes);
+
+        const tabelaBody = document.getElementById('corpoTabela');
+        const tabelaResumoDashboard = document.getElementById('corpoResumoDashboard');
+
+        if (tabelaBody) tabelaBody.innerHTML = '';
+        if (tabelaResumoDashboard) tabelaResumoDashboard.innerHTML = '';
 
         let receitas = 0;
         let despesas = 0;
 
-        transacoesFiltradas.forEach(t => {
-            const linha = document.createElement('tr');
-            const dataFormatada = t.data_hora ? new Date(t.data_hora).toLocaleDateString('pt-BR') : '---';
-            const valorNum = Number(t.valor);
-            const valorFormatado = formatarMoeda(valorNum);
-            const corTipo = String(t.tipo).toLowerCase() === 'receita' ? 'text-success' : 'text-danger';
+        if (transacoes.length === 0) {
+            if (tabelaBody) tabelaBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: #888; padding: 15px;">Nenhuma transação cadastrada.</td></tr>`;
+            if (tabelaResumoDashboard) tabelaResumoDashboard.innerHTML = `<tr><td colspan="2" style="text-align:center; color: #888; padding: 15px;">Nenhuma movimentação.</td></tr>`;
+            atualizarResumo(0, 0);
+            return;
+        }
 
-            if (String(t.tipo).toLowerCase() === 'receita') {
+        transacoes.forEach(t => {
+            const valorNum = Number(t.valor);
+            const valorFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valorNum);
+            
+            const tipoBruto = t.tipo_transacao || t.tipo || 'receita';
+            const tipo = String(tipoBruto).toLowerCase();
+            const eReceita = tipo === 'receita';
+
+            if (eReceita) {
                 receitas += valorNum;
             } else {
                 despesas += valorNum;
             }
 
-            linha.innerHTML = `
-                <td style="color: white;">${dataFormatada}</td>
-                <td style="color: white;">${t.descricao || 'Sem descrição'}</td>
-                <td class="${corTipo}" style="font-weight: bold;">${valorFormatado}</td>
-                <td style="color: white;"><span class="badge bg-secondary">${t.categoria_gasto || 'Geral'}</span></td>
-                <td style="color: white;">${t.metodo_pagamento || 'Não informado'}</td>
-                <td><button class="btn btn-sm btn-danger" onclick="deletarTransacao(${t.id_transacao})">🗑️</button></td>
-            `;
-            tabelaBody.appendChild(linha);
+            const idAtual = t.id_transacao || t.id;
+
+            // 1. Alimenta a tabela COMPLETA na aba de Transações
+            if (tabelaBody) {
+                const linha = document.createElement('tr');
+                linha.innerHTML = `
+                    <td style="color: white; padding: 10px;">${t.nome || t.descricao || 'Transação'}</td>
+                    <td style="color: ${eReceita ? '#2ecc71' : '#e74c3c'}; font-weight: bold; padding: 10px;">${valorFormatado}</td>
+                    <td style="color: white; padding: 10px;">${t.categoria_gasto || 'Geral'}</td>
+                    <td style="padding: 10px;">
+                        <button style="background: none; border: none; cursor: pointer;" onclick="deletarTransacao(${idAtual})">🗑️</button>
+                    </td>
+                `;
+                tabelaBody.appendChild(linha);
+            }
+
+            // 2. Alimenta a mini tabela de resumo na aba de Dashboard
+            if (tabelaResumoDashboard) {
+                const linhaResumo = document.createElement('tr');
+                linhaResumo.innerHTML = `
+                    <td style="color: white; padding: 10px;">${t.nome || t.descricao || 'Transação'}</td>
+                    <td style="color: ${eReceita ? '#2ecc71' : '#e74c3c'}; font-weight: bold; padding: 10px;">${valorFormatado}</td>
+                `;
+                tabelaResumoDashboard.appendChild(linhaResumo);
+            }
         });
 
         atualizarResumo(receitas, despesas);
-    } catch (error) {
-        console.error("Erro ao listar transações no front:", error);
-    }
-}
 
-function atualizarResumosLocais(receitas, despesas) {
-    if(typeof atualizarResumo === 'function') {
-        atualizarResumo(receitas, despesas);
+    } catch (error) {
+        console.error("❌ Erro ao listar transações no front-end:", error);
     }
 }
 
@@ -197,7 +216,7 @@ async function salvarEdicaoTransacao() {
     });
 
     fecharModalTransacao();
-    mostrarPopup('Transação atualizada!');
+    mostrarPopup('Transação updated!');
     listarTransacoes();
 }
 
@@ -253,7 +272,7 @@ function logout() {
 function mostrarPopup(mensagem) {
     const popup = document.getElementById('popup');
     if(!popup) return;
-    popup.innerText = message = mensagem;
+    popup.innerText = mensagem; // CORRIGIDO: message alterado para mensagem
     popup.classList.add('mostrar');
     setTimeout(() => {
         popup.classList.remove('mostrar');
@@ -306,10 +325,23 @@ function abrirMetas() {
 
 function abrirModalMeta() {
     document.getElementById('modalMeta').style.display = 'flex';
+    
+    // CORRIGIDO: Intercepta o clique do botão "Salvar" no HTML para acionar a função salvarMeta
+    const botoes = document.querySelectorAll('#modalMeta button');
+    botoes.forEach(btn => {
+        if (btn.innerText.trim().toLowerCase() === 'salvar') {
+            btn.onclick = salvarMeta;
+        }
+    });
 }
 
 function fecharModalMeta() {
     document.getElementById('modalMeta').style.display = 'none';
+    document.querySelector('#modalMeta h2').innerText = "Nova Meta";
+    metaEditando = null;
+    document.getElementById('nomeMeta').value = '';
+    document.getElementById('valorMeta').value = '';
+    document.getElementById('prazoMeta').value = '';
 }
 
 async function salvarMeta() {
@@ -354,26 +386,39 @@ async function listarMetas() {
     const usuario_id = usuarioLogado?.id || FALLBACK_USER_ID;
     const resposta = await fetch(`http://localhost:3000/metas?usuario_id=${usuario_id}`);
     const metas = await resposta.json();
-    const lista = document.getElementById('listaMetas');
+    todasMetas = metas; // CORRIGIDO: Agora alimenta a lista global perfeitamente
 
+    const lista = document.getElementById('listaMetas');
     if (!lista) return;
     lista.innerHTML = '';
 
+    if (metas.length === 0) {
+        lista.innerHTML = '<p style="color: #888; grid-column: 1/-1;">Nenhuma meta cadastrada ainda.</p>';
+        return;
+    }
+
     metas.forEach(meta => {
+        const idMeta = meta.id || meta.id_meta; // CORRIGIDO: Suporta os dois padrões de retorno do banco
+        
+        // CORRIGIDO: Tratamento de fuso horário para a data do prazo não vir errada
+        const dataObjeto = new Date(meta.data_fim);
+        const dataFormatada = dataObjeto.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+
         lista.innerHTML += `
         <div class="card-meta">
             <h2>${meta.nome}</h2>
             <p>${formatarMoeda(meta.valor_meta)}</p>
-            <small>Prazo: ${new Date(meta.data_fim).toLocaleDateString('pt-BR')}</small>
+            <small>Prazo: ${dataFormatada}</small>
             <div class="botoes-meta">
-                <button onclick="editarMeta(${meta.id})">Editar</button>
-                <button onclick="excluirMeta(${meta.id})">Excluir</button>
+                <button onclick="editarMeta(${idMeta})">Editar</button>
+                <button onclick="excluirMeta(${idMeta})">Excluir</button>
             </div>
         </div>`;
     });
 }
 
 async function excluirMeta(id) {
+    if(!confirm("Tem certeza que deseja excluir esta meta?")) return;
     await fetch(`http://localhost:3000/metas/${id}`, { method: 'DELETE' });
     mostrarPopup('Meta excluída!');
     listarMetas();
@@ -381,7 +426,22 @@ async function excluirMeta(id) {
 
 let metaEditando = null;
 function editarMeta(id) {
-    metaEditando = id;
+    // CORRIGIDO: Busca a meta selecionada da variável global agora populada corretamente
+    const metaSelecionada = todasMetas.find(m => (m.id === id || m.id_meta === id));
+    
+    if (metaSelecionada) {
+        metaEditando = id;
+        document.getElementById('nomeMeta').value = metaSelecionada.nome;
+        
+        const valorFormatado = Number(metaSelecionada.valor_meta).toFixed(2).replace('.', ',');
+        document.getElementById('valorMeta').value = valorFormatado;
+        
+        const dataFormatada = metaSelecionada.data_fim.split('T')[0];
+        document.getElementById('prazoMeta').value = dataFormatada;
+        
+        document.querySelector('#modalMeta h2').innerText = "Editar Meta";
+    }
+    
     document.getElementById('modalMeta').style.display = 'flex';
 }
 
@@ -422,7 +482,6 @@ async function gerarRelatorio() {
 
     const saldo = receitas - despesas;
     let situacao = receitas > despesas ? 'POSITIVO' : (despesas > receitas ? 'NEGATIVO' : 'EQUILIBRADO');
-    let analise = receitas > despesas ? 'Fluxo financeiro saudável.' : 'Revisão de gastos necessária.';
 
     const janela = window.open('', '_blank');
     janela.document.write(`<html><body><h1>📊 Relatório Financeiro</h1><div>Receitas: R$ ${receitas.toFixed(2)}</div><div>Despesas: R$ ${despesas.toFixed(2)}</div><div><strong>Saldo: R$ ${saldo.toFixed(2)}</strong></div><br><div>Situação: ${situacao}</div></body></html>`);
@@ -430,6 +489,7 @@ async function gerarRelatorio() {
     janela.print();
 }
 
+/* ATUALIZAR RESUMO E GRÁFICO */
 function atualizarResumo(receitas, despesas) {
     const saldo = receitas - despesas;
     const campos = ['receitas', 'despesas', 'saldo', 'receitasTransacoes', 'despesasTransacoes'];
@@ -442,18 +502,50 @@ function atualizarResumo(receitas, despesas) {
             else el.innerText = formatarMoeda(saldo);
         }
     });
+
+    const ctx = document.getElementById('graficoFinanceiro');
+    if (!ctx) return; 
+
+    if (meuGrafico) {
+        meuGrafico.data.datasets[0].data = [receitas, despesas];
+        meuGrafico.update();
+    } else {
+        meuGrafico = new Chart(ctx, {
+            type: 'doughnut', 
+            data: {
+                labels: ['Receitas', 'Despesas'],
+                datasets: [{
+                    data: [receitas, despesas],
+                    backgroundColor: ['#2ecc71', '#e74c3c'], 
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#ffffff', 
+                            font: { size: 14 }
+                        }
+                    }
+                }
+            }
+        });
+    }
 }
 
 function aplicarFiltros(transacoes) {
     const tipo = document.getElementById('filtroTipo')?.value;
-    const categoria = document.getElementById('filtroCategoria')?.value;
+    const category = document.getElementById('filtroCategoria')?.value;
     const min = Number(document.getElementById('filtroMin')?.value) || 0;
     const max = Number(document.getElementById('filtroMax')?.value) || Infinity;
 
     return transacoes.filter(t => {
         const valor = Number(t.valor);
         const tipoOk = !tipo || String(t.tipo).toLowerCase() === tipo.toLowerCase();
-        const catOk = !categoria || t.categoria_gasto === categoria;
+        const catOk = !category || t.categoria_gasto === category;
         const minOk = valor >= min;
         const maxOk = valor <= max;
         return tipoOk && catOk && minOk && maxOk;
@@ -461,7 +553,42 @@ function aplicarFiltros(transacoes) {
 }
 
 function filtrarTransacoes() {
-    listarTransacoes();
+    const tipoFiltro = document.getElementById('filtroTipo').value;
+    const categoriaFiltro = document.getElementById('filtroCategoria').value;
+    const minFiltro = document.getElementById('filtroMin').value;
+    const maxFiltro = document.getElementById('filtroMax').value;
+
+    const tabelaBody = document.getElementById('corpoTabela');
+    if (!tabelaBody) return;
+
+    tabelaBody.innerHTML = '';
+
+    const filtradas = todasTransacoes.filter(t => {
+        const bateTipo = !tipoFiltro || String(t.tipo_transacao).toLowerCase() === tipoFiltro.toLowerCase();
+        const bateCategoria = !categoriaFiltro || t.categoria_gasto === categoriaFiltro;
+        const valorNum = Number(t.valor);
+        const bateMin = !minFiltro || valorNum >= Number(minFiltro);
+        const bateMax = !maxFiltro || valorNum <= Number(maxFiltro);
+
+        return bateTipo && bateCategoria && bateMin && bateMax;
+    });
+
+    filtradas.forEach(t => {
+        const linha = document.createElement('tr');
+        const valorNum = Number(t.valor);
+        const valorFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valorNum);
+        const eReceita = String(t.tipo_transacao).toLowerCase() === 'receita';
+
+        linha.innerHTML = `
+            <td style="color: white; padding: 10px;">${t.nome || t.descricao || 'Sem descrição'}</td>
+            <td style="color: ${eReceita ? '#2ecc71' : '#e74c3c'}; font-weight: bold; padding: 10px;">${valorFormatado}</td>
+            <td style="color: white; padding: 10px;">${t.categoria_gasto || 'Geral'}</td>
+            <td style="padding: 10px;">
+                <button style="background: none; border: none; cursor: pointer;" onclick="deletarTransacao(${t.id})">🗑️</button>
+            </td>
+        `;
+        tabelaBody.appendChild(linha);
+    });
 }
 
 /* EVENTOS DE INICIALIZAÇÃO */
@@ -470,7 +597,7 @@ document.addEventListener('DOMContentLoaded', () => {
         carregarPerfil();
         listarTransacoes();
     } else {
-        listarTransacoes(); // Roda fallback com ID 3 de forma segura
+        listarTransacoes(); 
     }
 
     const form = document.getElementById('formTransacao') || document.querySelector('form');
