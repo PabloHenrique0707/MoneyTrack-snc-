@@ -211,3 +211,4 @@ WHERE id_conta = 1;
 UPDATE transacao 
 SET conta_id = 1 
 WHERE conta_id IS NULL;
+
