@@ -2,49 +2,26 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoneyTrack Login</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <title>MoneyTrack</title>
+    <link rel="stylesheet" href="style.css">
 </head>
+<body>
 
-<body class="login">
+    <h1>MoneyTrack</h1>
 
-    <div class="login-container">
+    <input type="text" id="nome" placeholder="Nome">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="senha" placeholder="Senha">
 
-        <div id="loginBox">
-            <h1>MoneyTrack 💸</h1>
+    <button onclick="cadastrarUsuario()">
+        Cadastrar
+    </button>
 
-            <input type="email" id="email" placeholder="Email">
-            <input type="password" id="senha" placeholder="Senha">
+    <h2>Usuários cadastrados</h2>
 
-            <button onclick="fazerLogin()">Entrar</button>
+<div id="listaUsuarios"></div>
 
-            <p onclick="mostrarCadastro()" class="trocar">
-                Criar conta
-            </p>
-        </div>
-
-        <div id="cadastroBox">
-            <h1>Criar Conta 💸</h1>
-
-            <input type="text" id="nomeCadastro" placeholder="Nome">
-            <input type="email" id="emailCadastro" placeholder="Email">
-            <input type="password" id="senhaCadastro" placeholder="Senha">
-
-            <button onclick="cadastrarNovoUsuario()">
-                Cadastrar
-            </button>
-
-            <p onclick="mostrarLogin()" class="trocar">
-                Já tenho conta
-            </p>
-        </div>
-
-    </div>
-
-    <div id="popup"></div>
-
-    <script src="../js/script.js"></script>
+    <script src="script.js"></script>
 
 </body>
 </html>
