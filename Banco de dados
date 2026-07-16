@@ -212,3 +212,31 @@ UPDATE transacao
 SET conta_id = 1 
 WHERE conta_id IS NULL;
 
+USE moneytrack;
+
+-- Criação da tabela metas usada diretamente pelo script.js
+CREATE TABLE IF NOT EXISTS metas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(150) NOT NULL,
+    valor_meta DECIMAL(10,2) NOT NULL,
+    data_fim DATE NOT NULL,
+    usuario_id INT,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+);
+
+-- Ajusta a tabela de contas para que o script possa vincular transações de forma dinâmica
+-- Se um usuário novo não tem conta, o back-end/front-end criará ou apontará uma conta padrão de maneira segura.
+
+
+USE moneytrack;
+
+-- Adiciona a coluna valor_meta à tabela planejamento_financeiro para evitar erros de coluna inexistente
+ALTER TABLE planejamento_financeiro ADD COLUMN valor_meta DECIMAL(10,2) NOT NULL DEFAULT 0.00;
+
+-- Altera a tabela para aceitar que data_fim e nome sejam suficientes nas metas
+ALTER TABLE planejamento_financeiro MODIFY COLUMN data_inicio DATE NULL;
+
+USE moneytrack;
+
+-- Remove a tabela duplicada que não está sendo usada pelo sistema
+DROP TABLE IF EXISTS metas;
