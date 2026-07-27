@@ -451,8 +451,9 @@ function abrirModalPerfil() {
 
     document.getElementById('editarNome').value = usuarioLogado.nome;
     document.getElementById('editarEmail').value = usuarioLogado.email;
-    document.getElementById('editarLimite').value = usuarioLogado.limite_gastos || '';
+    // Removida a linha que buscava o editarLimite
     document.getElementById('editarSenha').value = '';
+    
     document.getElementById('modalEditar').style.display = 'flex';
 }
 
@@ -460,13 +461,13 @@ function fecharModal() {
     document.getElementById('modalEditar').style.display = 'none';
 }
 
+/* ATUALIZAÇÃO DE PERFIL (100% LIMPA) */
 async function salvarPerfil() {
     usuarioLogado = obterUsuarioAtivo();
     if (!usuarioLogado) return;
 
     const nome = document.getElementById('editarNome').value;
     const email = document.getElementById('editarEmail').value;
-    const limite_gastos = document.getElementById('editarLimite').value || 0;
     const senhaNova = document.getElementById('editarSenha').value;
 
     const senha = senhaNova ? senhaNova : usuarioLogado.senha;
@@ -475,24 +476,26 @@ async function salvarPerfil() {
         const resposta = await fetch(`http://localhost:3000/usuarios/${usuarioLogado.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nome, email, senha, limite_gastos: parseFloat(limite_gastos) })
+            body: JSON.stringify({ nome, email, senha })
         });
 
-        if (resposta.ok) {
+        const dados = await resposta.json();
+
+        if (resposta.ok && dados.sucesso) {
             usuarioLogado.nome = nome;
             usuarioLogado.email = email;
-            usuarioLogado.limite_gastos = limite_gastos;
             usuarioLogado.senha = senha;
             localStorage.setItem('usuario', JSON.stringify(usuarioLogado));
             
-            mostrarPopup('Perfil updated com sucesso!');
+            mostrarPopup('Perfil atualizado com sucesso!');
             fecharModal();
             carregarPerfil();
         } else {
-            mostrarPopup('Erro ao atualizar dados no servidor.');
+            mostrarPopup(dados.mensagem || 'Erro ao atualizar dados no servidor.');
         }
     } catch (e) {
-        console.error(e);
+        console.error("Erro no fetch de perfil:", e);
+        mostrarPopup('Falha na comunicação com o servidor.');
     }
 }
 
@@ -685,3 +688,25 @@ function editarMeta(id) {
     
     abrirModalMeta();
 }
+
+function alternarVisibilidadeSenha() {
+    const campoSenha = document.getElementById('senha');
+    const iconeOlho = document.getElementById('iconeOlho');
+
+    if (campoSenha.type === 'password') {
+        campoSenha.type = 'text';
+        // Desenha o olho aberto (quando a senha está visível)
+        iconeOlho.innerHTML = `
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+        `;
+    } else {
+        campoSenha.type = 'password';
+        // Desenha o olho cortado/fechado (quando a senha está oculta)
+        iconeOlho.innerHTML = `
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+        `;
+    }
+}
+
