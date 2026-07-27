@@ -42,16 +42,19 @@ app.post('/usuarios', (req, res) => {
 
 app.put('/usuarios/:id', (req, res) => {
     const id = req.params.id;
-    const { nome, email, senha, limite_gastos } = req.body;
+    const { nome, email, senha } = req.body;
 
     const sql = `
         UPDATE usuarios
-        SET nome = ?, email = ?, senha = ?, limite_gastos = ?
+        SET nome = ?, email = ?, senha = ?
         WHERE id = ?
     `;
-    db.query(sql, [nome, email, senha, limite_gastos, id], (err) => {
-        if (err) return res.status(500).send('Erro ao atualizar usuário');
-        res.send('Usuário atualizado!');
+    db.query(sql, [nome, email, senha, id], (err) => {
+        if (err) {
+            console.error("Erro ao atualizar usuário no banco:", err);
+            return res.status(500).json({ sucesso: false, mensagem: 'Erro ao atualizar usuário' });
+        }
+        res.json({ sucesso: true, mensagem: 'Perfil atualizado com sucesso!' });
     });
 });
 
