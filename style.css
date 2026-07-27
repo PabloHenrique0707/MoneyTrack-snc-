@@ -483,3 +483,38 @@ body.login .conteudo {
         transform: translateY(0);
     }
 }
+
+.input-senha-container {
+    position: relative;
+    width: 100%;
+}
+
+.input-senha-container input {
+    width: 100%;
+    box-sizing: border-box;
+    padding-right: 45px; /* Abre espaço para o ícone não tampar o texto da senha */
+}
+
+.input-senha-container span {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color: #888; /* Cor cinza do ícone */
+}
+
+.input-senha-container span:hover {
+    color: #333; /* Escurece levemente ao passar o mouse */
+}
+
+.icone-dinheiro-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 15px auto;
+    color: #4CAF50; /* Cor verde profissional */
+}
+
