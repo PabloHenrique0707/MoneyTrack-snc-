@@ -65,7 +65,7 @@
                     <div class="titulo-secao">
                         <h2>Últimas Transações</h2>
                     </div>
-                    
+                     
                     <div id="resumoDashboard">
                         <table class="table" style="width: 100%; border-collapse: collapse;">
                             <thead>
@@ -141,7 +141,7 @@
                             <option value="Outros">Outros</option>
                         </select>
 
-                        <button onclick="adicionarTransacao()">Adicionar</button>
+                        <button onclick="adicionarTransacao(event)">Adicionar</button>
                     </div>
                 </section>
 
@@ -181,72 +181,54 @@
                         </div>
                     </div>
                     <button onclick="abrirConfirmExclusaoConta()">Excluir conta</button>
-                    <button class="botao-editar" onclick="abrirModalPerfil()">Editar Perfil</button>
+                    <button class="botao-editar" onclick="abrirModalPerfil()">Editar perfil</button>
                 </div>
             </section>
 
         </main>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="../js/script.js"></script>
-
-    <div id="popup"></div>
-
-    <div id="modalEditar" class="modal">
+    <div id="modalEditar" class="modal" style="display: none;">
         <div class="modal-conteudo">
             <h2>Editar Perfil</h2>
-            <input type="number" id="editarLimite" placeholder="Limite de gastos (R$)">
-            <input type="text" id="editarNome">
-            <input type="email" id="editarEmail">
-            <input type="password" id="editarSenha" placeholder="Nova senha">
+            <input type="text" id="editarNome" placeholder="Nome">
+            <input type="email" id="editarEmail" placeholder="Email">
+            <input type="number" id="editarLimite" placeholder="Limite de gastos mensal">
+            <input type="password" id="editarSenha" placeholder="Nova Senha (deixe em branco para manter)">
             <div class="botoes-modal">
                 <button onclick="salvarPerfil()">Salvar</button>
-                <button onclick="fecharModal()">Cancelar</button>
+                <button class="botao-cancelar" onclick="fecharModal()">Cancelar</button>
             </div>
         </div>
     </div>
 
-    <div id="modalTransacao" class="modal">
-        <div class="modal-conteudo">
-            <h2>Editar Transação</h2>
-            <input type="text" id="editarDescricao" placeholder="Descrição">
-            <input type="number" id="editarValor" placeholder="Valor" min="0" step="0.01">
-            <select id="editarTipo">
-                <option value="receita">Receita</option>
-                <option value="despesa">Despesa</option>
-            </select>
-            <input type="text" id="editarCategoria" placeholder="Categoria">
-            <div class="modal-botoes">
-                <button onclick="salvarEdicaoTransacao()">Salvar</button>
-                <button class="botao-cancelar" onclick="fecharModalTransacao()">Cancelar</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modalMeta" class="modal">
+    <div id="modalMeta" class="modal" style="display: none;">
         <div class="modal-conteudo">
             <h2>Nova Meta</h2>
-            <input type="text" id="nomeMeta" placeholder="Nome da meta">
-            <input type="text" id="valorMeta" placeholder="Valor da meta" oninput="aplicarMascaraMoeda(this)">
+            <input type="text" id="nomeMeta" placeholder="Nome da Meta">
+            <input type="text" id="valorMeta" placeholder="Valor Alvo (R$)" oninput="aplicarMascaraMoeda(this)">
             <input type="date" id="prazoMeta">
-            <div class="modal-botoes">
+            <div class="botoes-modal">
                 <button onclick="salvarMeta()">Salvar</button>
-                <button onclick="fecharModalMeta()">Cancelar</button>
+                <button class="botao-cancelar" onclick="fecharModalMeta()">Cancelar</button>
             </div>
         </div>
     </div>
 
-    <div id="modalConfirm" class="modal">
+    <div id="modalConfirm" class="modal" style="display: none;">
         <div class="modal-conteudo">
-            <h2>Tem certeza?</h2>
-            <p>Essa ação não pode ser desfeita.</p>
-            <div class="modal-botoes">
-                <button onclick="excluirContaConfirmada()">Sim, excluir</button>
-                <button onclick="fecharModalConfirm()">Cancelar</button>
+            <h2 id="tituloModalConfirm">Excluir?</h2>
+            <p id="textoModalConfirm" style="color: #9ca3af; margin-bottom: 20px; font-size: 14px;"></p>
+            <div class="botoes-modal">
+                <button style="background-color: #ff5252;" onclick="executarExclusaoConfirmada()">Sim, Confirmar</button>
+                <button class="botao-cancelar" onclick="fecharModalConfirm()">Não, Voltar</button>
             </div>
         </div>
     </div>
 
+    <div id="popup" class="popup"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../js/script.js"></script>
 </body>
 </html>
