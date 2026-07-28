@@ -16,7 +16,7 @@ body {
     display: flex;
 }
 
-/* SIDEBAR */
+/* SIDEBAR (AJUSTADA PARA FLEXBOX COMPLETO) */
 .sidebar {
     width: 220px;
     height: 100vh;
@@ -28,7 +28,6 @@ body {
     top: 0;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
 }
 
 .logo {
@@ -58,24 +57,57 @@ body {
     font-weight: bold;
 }
 
+/* MENU E ÍCONES ALINHADOS (ATUALIZADO PARA EMPURRAR O LOGOUT) */
 .sidebar ul {
     list-style: none;
-    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* Ocupa o restante do espaço vertical */
+    margin-top: 10px;
 }
 
 .sidebar li {
-    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
     border-radius: 12px;
     margin-bottom: 10px;
     cursor: pointer;
     transition: 0.3s;
-    color: #f3f4f6; /* AJUSTADO: Mudou de #d1d5db para um cinza bem claro/quase branco */
+    color: #f3f4f6;
+    font-size: 16px;
+}
+
+/* CLASSE DE LOGOUT (EMPURRA PARA O RODAPÉ) */
+.sidebar li.menu-logout {
+    margin-top: auto;
+    margin-bottom: 0;
+}
+
+/* Ajuste fino dos ícones SVG */
+.sidebar li svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    display: block;
 }
 
 .sidebar li:hover {
     background: #1f2937;
     transform: translateX(5px);
     color: white;
+}
+
+/* ABA SELECIONADA (ATIVO) */
+.sidebar li.ativo {
+    background: #00c853 !important;
+    color: #000000 !important;
+    font-weight: bold;
+}
+
+.sidebar li.ativo svg {
+    stroke: #000000;
 }
 
 /* ÁREA DE CONTEÚDO */
@@ -85,7 +117,11 @@ body {
     padding: 35px;
 }
 
+/* CABEÇALHO DO DASHBOARD E METAS (ALINHAMENTO DO BOTÃO À DIREITA) */
 .topo-dashboard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 35px;
 }
 
@@ -94,8 +130,26 @@ body {
     font-weight: bold;
 }
 
+/* BOTÃO GERAR RELATÓRIO E BOTÃO NOVA META IGUAIS */
+.botao-relatorio,
+button.botao-meta {
+    background: linear-gradient(135deg, #00c853, #00e676);
+    color: black;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.botao-relatorio:hover,
+button.botao-meta:hover {
+    transform: scale(1.05);
+}
+
 .subtitulo {
-    color: #e5e7eb; /* AJUSTADO: Mudou de #9ca3af para um cinza claro de alto contraste */
+    color: #e5e7eb;
     margin-top: 10px;
     font-size: 18px;
 }
@@ -144,8 +198,7 @@ body {
 /* SEÇÕES GENÉRICAS DO DASHBOARD */
 .ultimas-transacoes,
 .nova-transacao,
-.lista-transacoes,
-.perfil-container {
+.lista-transacoes {
     margin-top: 35px;
     background: #1e293b;
     padding: 25px;
@@ -174,7 +227,6 @@ input, select {
     outline: none;
 }
 
-/* Ajuste fino para os placeholders dos inputs ficarem legíveis */
 input::placeholder {
     color: #cbd5e1;
 }
@@ -190,7 +242,7 @@ input::placeholder {
     padding: 8px;
 }
 
-/* BOTÕES */
+/* BOTÕES GERAIS (VERDE) */
 button {
     background: linear-gradient(135deg, #00c853, #00e676);
     color: black;
@@ -207,8 +259,8 @@ button:hover {
 }
 
 .botao-cancelar {
-    background: #ff5252;
-    color: white;
+    background: #ff5252 !important;
+    color: white !important;
 }
 
 .botao-editar {
@@ -242,7 +294,7 @@ button:hover {
     font-weight: bold;
 }
 
-/* ÁREA DO GRÁFICO */
+/* ÁREA DO GRÁFICO (ATUALIZADA E CENTRALIZADA) */
 .grafico-area {
     margin-top: 35px;
     background: #1e293b;
@@ -257,16 +309,34 @@ button:hover {
 }
 
 .grafico-area h2 {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.grafico-wrapper {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #graficoFinanceiro {
-    max-width: 280px !important;
-    max-height: 280px !important;
-    margin: 0 auto;
+    width: 100% !important;
+    height: 100% !important;
 }
 
 /* PERFIL DO USUÁRIO */
+.perfil-container {
+    margin-top: 35px;
+    background: #1e1e1e; /* Fundo cinza escuro igual ao card de Metas */
+    padding: 25px;
+    border-radius: 20px;
+    border: 1px solid #2d2d2d;
+}
+
 .perfil-topo {
     display: flex;
     align-items: center;
@@ -283,6 +353,23 @@ button:hover {
     align-items: center;
     justify-content: center;
     font-size: 42px;
+}
+
+.botoes-perfil {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+/* BOTÕES DO PERFIL (FORÇANDO CORES ESPECÍFICAS) */
+.botao-editar-perfil {
+    background: #2196f3 !important; /* Azul igual ao Editar Meta */
+    color: white !important;
+}
+
+.botao-excluir-perfil {
+    background: #ff5252 !important; /* Vermelho igual ao Excluir Meta */
+    color: white !important;
 }
 
 /* TELA DE LOGIN / CADASTRO */
@@ -444,7 +531,7 @@ body.login .conteudo {
 }
 
 .card-meta small {
-    color: #e5e7eb; /* AJUSTADO: Mudou de #999898 para um cinza bem claro, facilitando a leitura da data */
+    color: #e5e7eb;
 }
 
 .botoes-meta {
@@ -463,13 +550,13 @@ body.login .conteudo {
 }
 
 .botao-editar-meta {
-    background: #2196f3;
-    color: white;
+    background: #2196f3 !important;
+    color: white !important;
 }
 
 .botao-excluir-meta {
-    background: #ff5252;
-    color: white;
+    background: #ff5252 !important;
+    color: white !important;
 }
 
 /* ANIMAÇÕES */
@@ -492,7 +579,7 @@ body.login .conteudo {
 .input-senha-container input {
     width: 100%;
     box-sizing: border-box;
-    padding-right: 45px; /* Abre espaço para o ícone não tampar o texto da senha */
+    padding-right: 45px;
 }
 
 .input-senha-container span {
@@ -503,11 +590,11 @@ body.login .conteudo {
     cursor: pointer;
     display: flex;
     align-items: center;
-    color: #888; /* Cor cinza do ícone */
+    color: #888;
 }
 
 .input-senha-container span:hover {
-    color: #333; /* Escurece levemente ao passar o mouse */
+    color: #333;
 }
 
 .icone-dinheiro-logo {
@@ -515,6 +602,5 @@ body.login .conteudo {
     justify-content: center;
     align-items: center;
     margin: 0 auto 15px auto;
-    color: #4CAF50; /* Cor verde profissional */
+    color: #4CAF50;
 }
-
