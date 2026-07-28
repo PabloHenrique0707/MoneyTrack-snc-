@@ -289,7 +289,7 @@ function atualizarResumo(receitas, despesas) {
     renderizarGrafico(receitas, despesas);
 }
 
-/* GRÁFICO */
+/* GRÁFICO DE DONUT COM RECEITA E DESPESA NO CENTRO */
 function renderizarGrafico(receitas, despesas) {
     const ctx = document.getElementById('graficoFinanceiro');
     if (!ctx) return;
@@ -298,6 +298,30 @@ function renderizarGrafico(receitas, despesas) {
         meuGrafico.destroy();
     }
 
+    // Plugin customizado para desenhar Receitas e Despesas no centro
+    const textoCentralDonut = {
+        id: 'textoCentralDonut',
+        beforeDraw(chart) {
+            const { width, height, ctx } = chart;
+            ctx.save();
+
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            // --- RECEITA (Linha de Cima) ---
+            ctx.font = "bold 13px Arial";
+            ctx.fillStyle = "#00e676"; // Verde
+            ctx.fillText("Receita: " + formatarMoeda(receitas), width / 2, height / 2 - 12);
+
+            // --- DESPESA (Linha de Baixo) ---
+            ctx.font = "bold 13px Arial";
+            ctx.fillStyle = "#ff5252"; // Vermelho
+            ctx.fillText("Despesa: " + formatarMoeda(despesas), width / 2, height / 2 + 12);
+
+            ctx.restore();
+        }
+    };
+
     meuGrafico = new Chart(ctx, {
         type: 'doughnut',
         data: {
@@ -305,7 +329,8 @@ function renderizarGrafico(receitas, despesas) {
             datasets: [{
                 data: [receitas, despesas],
                 backgroundColor: ['#00e676', '#ff5252'],
-                borderWidth: 0
+                borderWidth: 0,
+                cutout: '75%' // Mantém o espaço perfeito no meio do donut
             }]
         },
         options: {
@@ -313,10 +338,12 @@ function renderizarGrafico(receitas, despesas) {
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    labels: { color: 'white' }
+                    position: 'top',
+                    labels: { color: '#ffffff' }
                 }
             }
-        }
+        },
+        plugins: [textoCentralDonut]
     });
 }
 
@@ -451,7 +478,6 @@ function abrirModalPerfil() {
 
     document.getElementById('editarNome').value = usuarioLogado.nome;
     document.getElementById('editarEmail').value = usuarioLogado.email;
-    // Removida a linha que buscava o editarLimite
     document.getElementById('editarSenha').value = '';
     
     document.getElementById('modalEditar').style.display = 'flex';
@@ -461,7 +487,7 @@ function fecharModal() {
     document.getElementById('modalEditar').style.display = 'none';
 }
 
-/* ATUALIZAÇÃO DE PERFIL (100% LIMPA) */
+/* ATUALIZAÇÃO DE PERFIL */
 async function salvarPerfil() {
     usuarioLogado = obterUsuarioAtivo();
     if (!usuarioLogado) return;
@@ -507,6 +533,7 @@ function abrirPerfil() {
     document.getElementById('metasArea').style.display = 'none';
     carregarPerfil();
 }
+
 function abrirDashboard() {
     document.getElementById('dashboardArea').style.display = 'block';
     document.getElementById('perfilArea').style.display = 'none';
@@ -514,6 +541,7 @@ function abrirDashboard() {
     document.getElementById('metasArea').style.display = 'none';
     listarTransacoes();
 }
+
 function abrirTransacoes() {
     document.getElementById('dashboardArea').style.display = 'none';
     document.getElementById('perfilArea').style.display = 'none';
@@ -521,6 +549,7 @@ function abrirTransacoes() {
     document.getElementById('metasArea').style.display = 'none';
     listarTransacoes();
 }
+
 function logout() {
     localStorage.removeItem('usuario');
     window.location.href = 'login.html';
@@ -531,7 +560,6 @@ function mostrarPopup(mensagem) {
     const popup = document.getElementById('popup');
     if(!popup) return;
     
-    // AQUI ESTAVA O BUG! Trocado 'message' por 'mensagem'
     popup.innerText = mensagem; 
     
     popup.classList.add('mostrar');
@@ -648,7 +676,6 @@ async function listarMetas() {
         }
 
         metas.forEach(meta => {
-            // Mapeia tanto "id" vindo do server.js quanto apelidos alternativos
             const idMeta = meta.id || meta.id_planejamento || meta.id_meta; 
             
             const dataObjeto = new Date(meta.data_fim || meta.prazo);
@@ -695,14 +722,12 @@ function alternarVisibilidadeSenha() {
 
     if (campoSenha.type === 'password') {
         campoSenha.type = 'text';
-        // Desenha o olho aberto (quando a senha está visível)
         iconeOlho.innerHTML = `
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
             <circle cx="12" cy="12" r="3"></circle>
         `;
     } else {
         campoSenha.type = 'password';
-        // Desenha o olho cortado/fechado (quando a senha está oculta)
         iconeOlho.innerHTML = `
             <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
             <line x1="1" y1="1" x2="23" y2="23"></line>
@@ -710,3 +735,12 @@ function alternarVisibilidadeSenha() {
     }
 }
 
+// Seleciona todos os itens da sidebar
+const itensSidebar = document.querySelectorAll('.sidebar li');
+
+itensSidebar.forEach(item => {
+    item.addEventListener('click', () => {
+        itensSidebar.forEach(i => i.classList.remove('ativo'));
+        item.classList.add('ativo');
+    });
+});
