@@ -57,12 +57,12 @@ body {
     font-weight: bold;
 }
 
-/* MENU E ÍCONES ALINHADOS (ATUALIZADO PARA EMPURRAR O LOGOUT) */
+/* MENU E ÍCONES ALINHADOS */
 .sidebar ul {
     list-style: none;
     display: flex;
     flex-direction: column;
-    flex: 1; /* Ocupa o restante do espaço vertical */
+    flex: 1;
     margin-top: 10px;
 }
 
@@ -79,13 +79,11 @@ body {
     font-size: 16px;
 }
 
-/* CLASSE DE LOGOUT (EMPURRA PARA O RODAPÉ) */
 .sidebar li.menu-logout {
     margin-top: auto;
     margin-bottom: 0;
 }
 
-/* Ajuste fino dos ícones SVG */
 .sidebar li svg {
     width: 20px;
     height: 20px;
@@ -117,7 +115,7 @@ body {
     padding: 35px;
 }
 
-/* CABEÇALHO DO DASHBOARD E METAS (ALINHAMENTO DO BOTÃO À DIREITA) */
+/* CABEÇALHO DO DASHBOARD E METAS */
 .topo-dashboard {
     display: flex;
     justify-content: space-between;
@@ -130,7 +128,6 @@ body {
     font-weight: bold;
 }
 
-/* BOTÃO GERAR RELATÓRIO E BOTÃO NOVA META IGUAIS */
 .botao-relatorio,
 button.botao-meta {
     background: linear-gradient(135deg, #00c853, #00e676);
@@ -242,7 +239,7 @@ input::placeholder {
     padding: 8px;
 }
 
-/* BOTÕES GERAIS (VERDE) */
+/* BOTÕES GERAIS */
 button {
     background: linear-gradient(135deg, #00c853, #00e676);
     color: black;
@@ -294,7 +291,7 @@ button:hover {
     font-weight: bold;
 }
 
-/* ÁREA DO GRÁFICO (ATUALIZADA E CENTRALIZADA) */
+/* ÁREA DO GRÁFICO */
 .grafico-area {
     margin-top: 35px;
     background: #1e293b;
@@ -331,7 +328,7 @@ button:hover {
 /* PERFIL DO USUÁRIO */
 .perfil-container {
     margin-top: 35px;
-    background: #1e1e1e; /* Fundo cinza escuro igual ao card de Metas */
+    background: #1e1e1e;
     padding: 25px;
     border-radius: 20px;
     border: 1px solid #2d2d2d;
@@ -361,14 +358,13 @@ button:hover {
     margin-top: 25px;
 }
 
-/* BOTÕES DO PERFIL (FORÇANDO CORES ESPECÍFICAS) */
 .botao-editar-perfil {
-    background: #2196f3 !important; /* Azul igual ao Editar Meta */
+    background: #2196f3 !important;
     color: white !important;
 }
 
 .botao-excluir-perfil {
-    background: #ff5252 !important; /* Vermelho igual ao Excluir Meta */
+    background: #ff5252 !important;
     color: white !important;
 }
 
@@ -603,4 +599,132 @@ body.login .conteudo {
     align-items: center;
     margin: 0 auto 15px auto;
     color: #4CAF50;
+}
+
+/* ==========================================
+   CORREÇÃO DEFINITIVA DE RESPONSIVIDADE (CELULAR)
+   ========================================== */
+@media (max-width: 768px) {
+    
+    /* 1. Trava Geral contra rolagem horizontal */
+    html, body {
+        width: 100% !important;
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+    }
+
+    .layout {
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+
+    /* 2. Arrume a Sidebar para o topo */
+    .sidebar {
+        position: relative !important;
+        width: 100% !important;
+        height: auto !important;
+        padding: 15px !important;
+        border-right: none !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .sidebar ul {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+        padding: 0 !important;
+    }
+
+    .sidebar li {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 3. Conteúdo Central */
+    .conteudo {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 12px !important;
+        box-sizing: border-box !important;
+    }
+
+    .topo-dashboard {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 15px !important;
+    }
+
+    .titulo-dashboard {
+        font-size: 26px !important;
+    }
+
+    /* 4. Cards do Saldo e das Metas (Corrige o botão vermelho vazando) */
+    .cards, .lista-metas {
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 15px !important;
+    }
+
+    .card, .saldo-card, .receita-card, .despesa-card, .card-meta, .perfil-container {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 15px !important;
+    }
+
+    /* 5. Ajuste dos Botões (Editar / Excluir / Salvar) */
+    .botoes-meta, .botoes-perfil, .botoes-transacao {
+        display: flex !important;
+        flex-direction: column !important; /* Empilha os botões no celular */
+        width: 100% !important;
+        gap: 8px !important;
+        margin-top: 15px !important;
+    }
+
+    .botoes-meta button, .botoes-perfil button, .botao-editar-perfil, .botao-excluir-perfil {
+        width: 100% !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 6. Corrigir Foto de Perfil ficando em formato de "ovo" */
+    .foto-perfil, .foto-grande {
+        width: 65px !important;
+        height: 65px !important;
+        min-width: 65px !important;
+        min-height: 65px !important;
+        border-radius: 50% !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* 7. Corrigir Tabela de Histórico Financeiro */
+    .ultimas-transacoes, .lista-transacoes {
+        width: 100% !important;
+        overflow-x: auto !important; /* Adiciona rolagem se a tabela for grande */
+        box-sizing: border-box !important;
+        padding: 15px !important;
+    }
+
+    table {
+        width: 100% !important;
+        min-width: 300px !important;
+    }
+
+    th, td {
+        padding: 8px 5px !important;
+        font-size: 13px !important;
+    }
+
+    /* 8. Formulários e Inputs */
+    .inputs, .filtros {
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+
+    input, select, button {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
 }
