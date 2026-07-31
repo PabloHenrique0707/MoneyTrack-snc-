@@ -240,3 +240,15 @@ USE moneytrack;
 
 -- Remove a tabela duplicada que não está sendo usada pelo sistema
 DROP TABLE IF EXISTS metas;
+
+
+
+
+USE moneytrack;
+
+-- 1. Adiciona a coluna valor_meta na tabela
+ALTER TABLE planejamento_financeiro ADD valor_meta DECIMAL(10,2) NOT NULL DEFAULT 0.00;
+
+-- 2. Altera a coluna data_inicio para permitir valores nulos
+ALTER TABLE planejamento_financeiro MODIFY data_inicio DATE NULL;
+
