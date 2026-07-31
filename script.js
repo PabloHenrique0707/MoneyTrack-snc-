@@ -609,6 +609,7 @@ function fecharModalMeta() {
     document.getElementById('prazoMeta').value = '';
 }
 
+/* SALVAR META CORRIGIDO */
 async function salvarMeta() {
     usuarioLogado = obterUsuarioAtivo();
     if (!usuarioLogado) {
@@ -626,43 +627,54 @@ async function salvarMeta() {
     }
 
     const valor_meta = Number(valor_meta_input.replace("R$", "").replace(/\./g, '').replace(',', '.').trim());
-
     if (isNaN(valor_meta) || valor_meta <= 0) {
         mostrarPopup('O valor da meta deve ser maior que zero!');
         return;
     }
 
     try {
+        let resposta;
         if (metaEditando) {
-            await fetch(`http://localhost:3000/metas/${metaEditando}`, {
+            resposta = await fetch(`http://localhost:3000/metas/${metaEditando}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ nome, valor_meta, data_fim })
             });
-            mostrarPopup('Meta atualizada!');
-            metaEditando = null;
         } else {
-            await fetch('http://localhost:3000/metas', {
+            resposta = await fetch('http://localhost:3000/metas', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ nome, valor_meta, data_fim, usuario_id: usuarioLogado.id })
             });
-            mostrarPopup('Meta criada!');
         }
-        fecharModalMeta();
-        await listarMetas();
+
+        if (resposta.ok) {
+            mostrarPopup(metaEditando ? 'Meta atualizada!' : 'Meta criada!');
+            metaEditando = null;
+            fecharModalMeta();
+            await listarMetas();
+        } else {
+            const erroTxt = await resposta.text();
+            mostrarPopup('Erro no servidor: ' + erroTxt);
+        }
     } catch (error) {
-        mostrarPopup("Erro ao salvar a meta.");
+        mostrarPopup("Erro de comunicação com o servidor.");
         console.error(error);
     }
 }
 
+/* LISTAR METAS CORRIGIDO */
 async function listarMetas() {
     usuarioLogado = obterUsuarioAtivo();
     if (!usuarioLogado) return;
-    
+
     try {
         const resposta = await fetch(`http://localhost:3000/metas?usuario_id=${usuarioLogado.id}`);
+        if (!resposta.ok) {
+            console.error("Erro ao buscar metas no servidor");
+            return;
+        }
+
         const metas = await resposta.json();
         todasMetas = metas; 
 
@@ -670,14 +682,13 @@ async function listarMetas() {
         if (!lista) return;
         lista.innerHTML = '';
 
-        if (metas.length === 0) {
+        if (!Array.isArray(metas) || metas.length === 0) {
             lista.innerHTML = '<p style="color: #888; grid-column: 1/-1;">Nenhuma meta cadastrada ainda.</p>';
             return;
         }
 
         metas.forEach(meta => {
             const idMeta = meta.id || meta.id_planejamento || meta.id_meta; 
-            
             const dataObjeto = new Date(meta.data_fim || meta.prazo);
             const dataFormatada = dataObjeto.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
 
