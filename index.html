@@ -2,24 +2,32 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MoneyTrack</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <h1>MoneyTrack</h1>
+    <header>
+        <h1>MoneyTrack</h1>
+    </header>
 
-    <input type="text" id="nome" placeholder="Nome">
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="senha" placeholder="Senha">
+    <main class="container">
+        <section class="card-formulario">
+            <h2>Cadastro de Usuário</h2>
+            <div class="form-group">
+                <input type="text" id="nome" placeholder="Nome">
+                <input type="email" id="email" placeholder="Email">
+                <input type="password" id="senha" placeholder="Senha">
+                <button onclick="cadastrarUsuario()">Cadastrar</button>
+            </div>
+        </section>
 
-    <button onclick="cadastrarUsuario()">
-        Cadastrar
-    </button>
-
-    <h2>Usuários cadastrados</h2>
-
-<div id="listaUsuarios"></div>
+        <section class="card-lista">
+            <h2>Usuários cadastrados</h2>
+            <div id="listaUsuarios"></div>
+        </section>
+    </main>
 
     <script src="script.js"></script>
 
