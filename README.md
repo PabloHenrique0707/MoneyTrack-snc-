@@ -24,16 +24,6 @@ Com o MoneyTrack, o usuário pode acompanhar lançamentos de receitas e despesas
 
 ---
 
-## 📸 Interface do Sistema
-
-<div align="center">
-  <img src="assets/images/print-dashboard.png" alt="Dashboard do MoneyTrack" width="100%">
-</div>
-
-*(Nota: Certifique-se de que a imagem da dashboard esteja salva no caminho `assets/images/print-dashboard.png`)*
-
----
-
 ## ✨ Funcionalidades Principais
 
 * 🔐 **Autenticação de Usuário:** Login e cadastro seguro de usuários.
